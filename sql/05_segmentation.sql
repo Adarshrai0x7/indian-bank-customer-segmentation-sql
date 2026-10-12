@@ -88,9 +88,13 @@ SELECT
     CASE 
         WHEN r_score >= 3 AND f_score >= 3 AND m_score >= 3 THEN 'Champions'
         WHEN f_score >= 3 THEN 'Loyal'
-        WHEN f_score = 1 AND m_score = 4 THEN 'Big One-time Spenders'
+        -- Cutoff: p75 total_spend = 1,500.01 (m_score = 4 is top 25% by total spend, txn_count = 1)
+        WHEN f_score = 1 AND m_score = 4 THEN 'One-time Higher Spenders'
         WHEN r_score >= 3 AND f_score <= 2 AND m_score <= 3 THEN 'Recent Light'
-        WHEN r_score = 1 THEN 'Inactive since August'
+        -- 'Last seen before mid-Aug (45+ days)': Recency score 1 (days_since_last_txn > 44 as of 2016-09-30, i.e., last txn on or before 2016-08-16).
+        -- How it differs from Q4: Q4 counts ALL customers whose last transaction was on or before 2016-08-31 (full August-only cohort with no transaction in September or October).
+        -- In contrast, 'Last seen before mid-Aug (45+ days)' is a narrower subset of August-only customers who have been inactive for at least 45 days prior to 2016-09-30.
+        WHEN r_score = 1 THEN 'Last seen before mid-Aug (45+ days)'
         ELSE 'Others'
     END AS rfm_segment,
     age_group,
@@ -148,6 +152,30 @@ ORDER BY
         WHEN 'Unknown balance' THEN 5
     END;
 
+-- Section A2: Value Segments - Flagged (flag=1) vs Unflagged (flag=0) Breakdown
+SELECT 
+    value_segment,
+    COUNT(*) AS total_customers,
+    SUM(CASE WHEN profile_conflict_flag = 1 THEN 1 ELSE 0 END) AS flagged_customers,
+    ROUND(SUM(CASE WHEN profile_conflict_flag = 1 THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 2) AS pct_flagged_customers,
+    SUM(CASE WHEN profile_conflict_flag = 0 THEN 1 ELSE 0 END) AS unflagged_customers,
+    ROUND(SUM(CASE WHEN profile_conflict_flag = 0 THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 2) AS pct_unflagged_customers,
+    ROUND(SUM(total_spend), 2) AS segment_total_spend,
+    ROUND(SUM(CASE WHEN profile_conflict_flag = 1 THEN total_spend ELSE 0 END), 2) AS flagged_spend,
+    ROUND(SUM(CASE WHEN profile_conflict_flag = 1 THEN total_spend ELSE 0 END) * 100.0 / SUM(total_spend), 2) AS pct_flagged_spend,
+    ROUND(SUM(CASE WHEN profile_conflict_flag = 0 THEN total_spend ELSE 0 END), 2) AS unflagged_spend,
+    ROUND(SUM(CASE WHEN profile_conflict_flag = 0 THEN total_spend ELSE 0 END) * 100.0 / SUM(total_spend), 2) AS pct_unflagged_spend
+FROM customer_segments
+GROUP BY value_segment
+ORDER BY 
+    CASE value_segment 
+        WHEN 'Premium' THEN 1
+        WHEN 'High' THEN 2
+        WHEN 'Mid' THEN 3
+        WHEN 'Low' THEN 4
+        WHEN 'Unknown balance' THEN 5
+    END;
+
 -- Reconciliation Check: Customer count sum must equal 883,660 and total spend must match customer_features
 SELECT 
     (SELECT COUNT(*) FROM customer_segments) AS segments_total_customers,
@@ -166,9 +194,9 @@ ORDER BY
     CASE rfm_segment 
         WHEN 'Champions' THEN 1
         WHEN 'Loyal' THEN 2
-        WHEN 'Big One-time Spenders' THEN 3
+        WHEN 'One-time Higher Spenders' THEN 3
         WHEN 'Recent Light' THEN 4
-        WHEN 'Inactive since August' THEN 5
+        WHEN 'Last seen before mid-Aug (45+ days)' THEN 5
         WHEN 'Others' THEN 6
     END;
 

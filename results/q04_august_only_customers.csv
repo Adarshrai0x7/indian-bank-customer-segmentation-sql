@@ -1,2 +1,2 @@
-august_only_customers,pct_customers,total_latest_balance,avg_latest_balance,null_balance_count
-514587,58.23,59540379274.57,115980.60,1222
+august_only_customers,pct_customers,single_txn_august_customers,pct_single_txn,total_latest_balance,avg_latest_balance
+514587,58.23,461401,89.66,59540379274.57,115980.60

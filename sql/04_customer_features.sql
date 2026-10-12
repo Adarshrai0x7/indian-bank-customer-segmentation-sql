@@ -28,7 +28,8 @@ CREATE TABLE customer_features (
     profile_conflict_flag   TINYINT NOT NULL,
     INDEX idx_cf_spend (total_spend),
     INDEX idx_cf_recency (days_since_last_txn),
-    INDEX idx_cf_flag (profile_conflict_flag)
+    INDEX idx_cf_flag (profile_conflict_flag),
+    INDEX idx_cf_location (location_clean)
 );
 
 -- Step 2: Populate customer features by aggregating fact transactions and joining customers dimension.

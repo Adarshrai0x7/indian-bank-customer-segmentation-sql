@@ -1,7 +1,21 @@
-rfm_segment,customer_count,pct_customers,total_spend,pct_total_spend,avg_spend_per_cust
-Big One-time Spenders,151516,17.15,916340807.09,55.51,6047.82
-Others,232745,26.34,381825841.48,23.13,1640.53
-Inactive since August,217201,24.58,137886323.12,8.35,634.83
-Recent Light,263581,29.83,123555920.36,7.48,468.76
-Champions,13385,1.51,69328830.96,4.20,5179.59
-Loyal,5232,0.59,21858008.56,1.32,4177.75
+segment_type,segment_name,profile_conflict_flag,flag_status,customers,pct_total_customers,total_spend,pct_total_spend,avg_spend_per_cust
+RFM Segment,Champions,1,Flagged (Conflict),13301,1.51,68351514.61,4.14,5138.83
+RFM Segment,Champions,0,Not Flagged (Clean),84,0.01,977316.35,0.06,11634.72
+RFM Segment,Last seen before mid-Aug (45+ days),1,Flagged (Conflict),13840,1.57,42303641.74,2.56,3056.62
+RFM Segment,Last seen before mid-Aug (45+ days),0,Not Flagged (Clean),203361,23.01,95582681.38,5.79,470.01
+RFM Segment,Loyal,1,Flagged (Conflict),5199,0.59,21663126.70,1.31,4166.79
+RFM Segment,Loyal,0,Not Flagged (Clean),33,0.00,194881.86,0.01,5905.51
+RFM Segment,One-time Higher Spenders,0,Not Flagged (Clean),151516,17.15,916340807.09,55.51,6047.82
+RFM Segment,Others,1,Flagged (Conflict),61360,6.94,271356762.59,16.44,4422.37
+RFM Segment,Others,0,Not Flagged (Clean),171385,19.39,110469078.89,6.69,644.57
+RFM Segment,Recent Light,1,Flagged (Conflict),39054,4.42,27226345.39,1.65,697.15
+RFM Segment,Recent Light,0,Not Flagged (Clean),224527,25.41,96329574.97,5.84,429.03
+Value Segment,High,1,Flagged (Conflict),51386,5.82,93560178.83,5.67,1820.73
+Value Segment,High,0,Not Flagged (Clean),206808,23.40,263567943.88,15.97,1274.46
+Value Segment,Low,1,Flagged (Conflict),3778,0.43,568220.60,0.03,150.40
+Value Segment,Low,0,Not Flagged (Clean),104959,11.88,10370949.22,0.63,98.81
+Value Segment,Mid,1,Flagged (Conflict),41953,4.75,26400702.17,1.60,629.29
+Value Segment,Mid,0,Not Flagged (Clean),314659,35.61,134363462.70,8.14,427.01
+Value Segment,Premium,1,Flagged (Conflict),35637,4.03,310372289.43,18.80,8709.27
+Value Segment,Premium,0,Not Flagged (Clean),122965,13.92,810580673.90,49.10,6591.96
+Value Segment,Unknown balance,0,Not Flagged (Clean),1515,0.17,1011310.84,0.06,667.53

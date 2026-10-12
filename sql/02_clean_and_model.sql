@@ -390,7 +390,8 @@ CREATE TABLE customers (
     location_clean          VARCHAR(50) NOT NULL,
     latest_account_balance  DECIMAL(15,2) NULL,
     txn_count               INT NOT NULL DEFAULT 1,
-    profile_conflict_flag   TINYINT NOT NULL DEFAULT 0
+    profile_conflict_flag   TINYINT NOT NULL DEFAULT 0,
+    INDEX idx_cust_location (location_clean)
 );
 
 -- Step 12: Populate clean customers table by joining resolved attribute tables.

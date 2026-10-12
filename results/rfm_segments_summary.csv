@@ -1,7 +1,7 @@
 rfm_segment,customers,pct_customers,pct_total_spend
 Champions,13385,1.51,4.20
 Loyal,5232,0.59,1.32
-Big One-time Spenders,151516,17.15,55.51
+One-time Higher Spenders,151516,17.15,55.51
 Recent Light,263581,29.83,7.48
-Inactive since August,217201,24.58,8.35
+Last seen before mid-Aug (45+ days),217201,24.58,8.35
 Others,232745,26.34,23.13

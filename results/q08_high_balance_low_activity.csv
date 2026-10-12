@@ -1,2 +1,2 @@
-target_customers,pct_total_customers,avg_balance,avg_spend,total_held_balance
-32919,3.73,334481.20,104.95,11010786717.73
+target_customers,pct_of_all_customers,pct_of_unflagged_single_txn,balance_cutoff_p70,spend_cutoff_p30,median_balance,avg_balance,avg_spend,total_held_balance
+47208,5.34,6.38,43414.61,248.00,102543.08,275121.01,121.83,12987912788.80

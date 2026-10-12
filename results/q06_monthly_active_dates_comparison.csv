@@ -1,4 +1,4 @@
-txn_month,active_dates,total_txns,total_value,avg_txns_per_active_date,avg_value_per_active_date,data_status
-2016-08,31,653376,1030599493.84,21076.65,33245144.96,full month
-2016-09,22,390701,612531219.10,17759.14,27842328.14,full month
-2016-10,2,3655,7665018.63,1827.50,3832509.32,partial: 2 days of data
+txn_month,active_dates,total_txns,total_value,avg_txns_per_active_date,avg_value_per_active_date,note
+2016-08,31,653376,1030599493.84,21076.65,33245144.96,Full month (31 active dates)
+2016-09,22,390701,612531219.10,17759.14,27842328.14,22 active dates (8 missing calendar dates)
+2016-10,2,3655,7665018.63,1827.50,3832509.32,Incomplete (2 active dates; not used for trend comparison)

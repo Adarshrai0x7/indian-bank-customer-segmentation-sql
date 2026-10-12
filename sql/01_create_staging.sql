@@ -15,7 +15,8 @@ CREATE TABLE staging_bank_transactions (
 );
 
 -- Fast bulk load from CSV file into staging table
--- Update the file path below to match your local setup if needed
+-- Note: When running via mysql CLI from the project root, relative path 'data/bank_transactions.csv' works.
+-- If running via MySQL Workbench or from another directory, replace with the absolute path (e.g. 'C:/path/to/data/bank_transactions.csv').
 LOAD DATA LOCAL INFILE 'data/bank_transactions.csv'
 INTO TABLE staging_bank_transactions
 FIELDS TERMINATED BY ','
