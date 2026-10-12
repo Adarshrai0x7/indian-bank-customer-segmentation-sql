@@ -1,0 +1,16 @@
+cohort,value_segment,customers,avg_spend,median_spend,median_balance
+All Customers,Premium,158602,7067.71,3960.00,227209.32
+All Customers,High,258194,1383.18,1375.00,51209.88
+All Customers,Mid,356612,450.81,390.00,11588.84
+All Customers,Low,108737,100.60,99.00,1546.48
+All Customers,Unknown balance,1515,667.53,350.00,
+Conflict Flag = 0,Premium,122965,6591.96,3531.79,253221.16
+Conflict Flag = 0,High,206808,1274.46,1259.00,55391.36
+Conflict Flag = 0,Mid,314659,427.01,350.00,11903.36
+Conflict Flag = 0,Low,104959,98.81,96.00,1545.28
+Conflict Flag = 0,Unknown balance,1515,667.53,350.00,
+Txn Count = 1,Premium,119061,6442.94,3288.18,256524.84
+Txn Count = 1,High,202740,1262.46,1249.00,55695.55
+Txn Count = 1,Mid,312184,425.19,350.00,11912.98
+Txn Count = 1,Low,104741,98.72,96.00,1545.04
+Txn Count = 1,Unknown balance,1514,667.35,350.00,

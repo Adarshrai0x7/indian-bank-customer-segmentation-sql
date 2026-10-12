@@ -1,0 +1,4 @@
+gender,customer_count,pct_customers,avg_balance,avg_spend,total_spend,pct_total_spend
+M,646880,73.20,117511.87,1843.82,1192731274.80,72.25
+F,235976,26.70,110023.92,1933.22,456192548.79,27.63
+Unknown,804,0.09,30016.60,2328.24,1871907.98,0.11

@@ -1,0 +1,6 @@
+value_segment,customers,pct_customers,pct_total_spend,median_balance,avg_total_spend,avg_txn_count,pct_conflict_flag
+Premium,158602,17.95,67.90,227209.32,7067.71,1.30,22.47
+High,258194,29.22,21.63,51209.88,1383.18,1.25,19.90
+Mid,356612,40.36,9.74,11588.84,450.81,1.13,11.76
+Low,108737,12.31,0.66,1546.48,100.60,1.04,3.47
+Unknown balance,1515,0.17,0.06,,667.53,1.00,0.00

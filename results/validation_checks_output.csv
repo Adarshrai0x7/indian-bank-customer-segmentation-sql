@@ -1,0 +1,11 @@
+check_description,failing_row_count,status,execution_time
+Check 1a: Duplicate customer_id in customers,0,PASSED,2.21s
+Check 1b: Duplicate transaction_id in transactions,0,PASSED,3.92s
+Check 2: Orphan transactions with no matching customer,0,PASSED,14.24s
+Check 3: Transactions outside 2016-08-01 to 2016-10-21,0,PASSED,0.01s
+Check 4: Customer age out of range (< 18 or > 100),0,PASSED,1.42s
+Check 5: Row count reconciliation (clean + zero != staging),0,PASSED,8.48s
+Check 6: Latest account balance consistency,0,PASSED,25.48s
+Check 6b: Missing balance integrity (cust balance is NULL but non-null txn balance exists),0,PASSED,2.70s
+Check 7: Customer age matches DOB as of 2016-10-21,0,PASSED,1.32s
+"Check 8: Customer gender is strictly M, F, or Unknown",0,PASSED,0.95s

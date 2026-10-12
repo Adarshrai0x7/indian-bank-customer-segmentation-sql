@@ -1,0 +1,11 @@
+customer_id,value_segment,rfm_segment,age_group,gender,location_clean,profile_conflict_flag,total_spend,latest_balance
+C1010011,Premium,Others,18-25,F,DELHI NCR,1,5106.00,32500.73
+C1010012,High,No recent activity (60+ days),18-25,M,MUMBAI METRO,0,1499.00,24204.49
+C1010014,High,No recent activity (60+ days),26-35,M,MUMBAI METRO,1,1455.00,161848.76
+C1010018,Low,Others,26-35,F,OTHER,0,30.00,496.18
+C1010024,Premium,Big One-time Spenders,46-60,M,KOLKATA,0,5000.00,87058.65
+C1010028,Premium,Others,26-35,F,DELHI NCR,0,557.00,296828.37
+C1010031,High,No recent activity (60+ days),26-35,M,OTHER,1,1864.00,8646.21
+C1010035,Premium,Others,36-45,M,MUMBAI METRO,1,750.00,378013.09
+C1010036,Premium,Others,18-25,M,DELHI NCR,0,208.00,355430.17
+C1010037,Premium,Big One-time Spenders,26-35,M,BANGALORE,0,19680.00,95859.17
