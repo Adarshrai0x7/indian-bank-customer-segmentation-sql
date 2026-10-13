@@ -12,7 +12,7 @@ Clean master dimension table. It stores one row per customer ID.
 | --- | --- | --- | --- |
 | `customer_id` | VARCHAR(50) | Unique customer ID | Copied from `staging_bank_transactions` (primary key). |
 | `gender` | VARCHAR(20) | Customer gender ('M', 'F', 'Unknown') | Mode gender across transactions. Ties are broken by the latest transaction date. |
-| `date_of_birth` | DATE | Customer birth date | Mode date of birth across transactions. Placeholder dates (`1/1/1800`) and ages outside 18-100 are set to NULL. |
+| `date_of_birth` | DATE | Customer birth date | Mode date of birth across transactions. Dummy dates (`1/1/1800`) and ages outside 18-100 are set to NULL. |
 | `age` | INT | Customer age in years | Calculated using `TIMESTAMPDIFF(YEAR, date_of_birth, '2016-10-21')` with reference date 2016-10-21. |
 | `age_group` | VARCHAR(20) | Age bucket | Grouped into '18-25', '26-35', '36-45', '46-60', '60+', and 'Unknown' (for NULL dates). |
 | `location_clean` | VARCHAR(50) | Cleaned city or region | Mode location matched against 30+ major metro areas, 'INTERNATIONAL', or 'OTHER'. |
@@ -35,7 +35,7 @@ Clean transaction fact table. It stores all valid transactions with amount great
 | `transaction_hour` | TINYINT | Hour of transaction (0-23) | Extracted from `transaction_time` using `HOUR()`. |
 | `day_of_week` | VARCHAR(20) | Name of weekday | Extracted from `transaction_date` using `DAYNAME()`. |
 | `month_label` | VARCHAR(10) | Month label (YYYY-MM) | Extracted from `transaction_date` using `DATE_FORMAT(..., '%Y-%m')`. |
-| `amount` | DECIMAL(15,2) | Transaction amount in INR | Converted from text using `CAST()`. Rows with amount <= 0 were excluded. |
+| `amount` | DECIMAL(15,2) | Transaction amount in INR | Converted from text using `CAST()`. Rows with amount = 0 were excluded (no negative amounts exist). |
 | `account_balance` | DECIMAL(15,2) | Account balance at transaction in INR | Converted from text using `CAST()`. Blank values were converted to NULL. |
 
 ---

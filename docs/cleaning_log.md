@@ -13,7 +13,7 @@ Every row count and metric in this log is backed by the exact, re-runnable MySQL
 | **1** | Remove rows with NULL critical keys (`customer_id`, `transaction_date`, `transaction_amount`) | 1,048,567 | 1,048,567 | 0 | Staging has 0 missing keys. |
 | **2** | Exclude zero-amount transactions (`transaction_amount = 0`) | 1,048,567 | 1,047,732 | 835 | Reason unknown in raw data; excluded from clean `transactions` fact table. |
 | **3** | Handle blank account balance values (`cust_account_balance = ''`) | 1,047,732 | 1,047,732 | 2,364 | Converted empty string balances to `NULL`. 2,364 rows affected in clean transactions (2,369 in raw staging; 5 were zero-amount). |
-| **4** | Clean placeholder and invalid DOB values (`1/1/1800` and `'nan'`) | 1,047,732 | 1,047,732 | 60,614 | Converted to `NULL`. In clean transactions: 57,227 dummy `1/1/1800` + 3,387 text `'nan'`. (In raw staging: 57,339 dummy + 3,397 `'nan'` = 60,736). |
+| **4** | Clean dummy and invalid DOB values (`1/1/1800` and `'nan'`) | 1,047,732 | 1,047,732 | 60,614 | Converted to `NULL`. In clean transactions: 57,227 dummy `1/1/1800` + 3,387 text `'nan'`. (In raw staging: 57,339 dummy + 3,397 `'nan'` = 60,736). |
 | **5** | Filter out-of-range ages (< 18 or > 100 as of reference date `2016-10-21`) | 1,047,732 | 1,047,732 | 1,811 | Parsed 2-digit years manually; ages < 18 or > 100 set to `NULL`. 1,811 rows affected in clean transactions (1,816 in raw staging; 5 were zero-amount). |
 | **6** | Standardize raw gender values | 1,047,732 | 1,047,732 | 1,101 | Standardized non-M/F to `'Unknown'`. 1,100 blank rows + 1 `'T'` row = 1,101 rows (identical in staging and clean transactions). |
 | **7** | Resolve customer-level gender conflicts | 883,660 | 883,660 | 59,820 customers | Mode assigned per customer; valid (`'M'`/`'F'`) preferred over `'Unknown'`, ties broken by latest transaction. 59,820 customers had conflicting `'M'` vs `'F'` values. |
@@ -55,7 +55,7 @@ FROM staging_bank_transactions
 WHERE cust_account_balance IS NULL OR TRIM(cust_account_balance) = '';
 ```
 
-### Step 4: Placeholder DOBs (Result: 60,614 clean / 60,736 staging)
+### Step 4: Dummy DOBs (Result: 60,614 clean / 60,736 staging)
 ```sql
 -- On clean transactions (amount > 0):
 SELECT 
@@ -193,6 +193,7 @@ FROM (
 ) sub
 GROUP BY category;
 ```
+<!-- Note: these counts use each customer's resolved (most common) location. Counting each transaction's own location text gives 788,230 named (75.23%) and 259,502 OTHER (24.77%). -->
 
 ### Step 10: Customer latest account balance (Result: 881,997 non-null / 1,663 NULL)
 ```sql
@@ -219,17 +220,7 @@ ORDER BY profile_conflict_flag DESC;
 
 ---
 
-## 3. Transparency Note: Origin of Initial Draft Discrepancies
-
-1. **Where "105" Came From**:
-   In the very first draft of this log, during script writing, `105 blank, 1 'T'` was written as an unverified placeholder estimate without executing the SQL aggregation first. Once the real query was executed, the true count of **1,100 blank rows** and **1 `'T'` row** (total **1,101**) was confirmed.
-
-2. **Why Step 10 Changed from 881,664 / 1,996 to 881,997 / 1,663**:
-   The number **1,996** in the initial draft was also an unverified placeholder written while the table build query was still running in the background. Once the `customers` table finished building and was queried with `SELECT COUNT(*) FROM customers WHERE latest_account_balance IS NULL;`, MySQL returned the true count: **1,663** customers with NULL balance ($883,660 - 1,663 = \mathbf{881,997}$ with non-null balance).
-
----
-
-## 4. Customer ID Reliability & Data Limitations
+## 3. Customer ID Reliability & Data Limitations
 
 ### Investigation: The Multi-Transaction Customer Discrepancy
 - **Total Clean Transactions**: 1,047,732
@@ -241,7 +232,7 @@ ORDER BY profile_conflict_flag DESC;
 | Metric | Customer Count | % of Multi-Txn Customers |
 | :--- | :--- | :--- |
 | **Customers with $\ge 2$ different valid birthdays** | **128,005** | **89.25%** |
-| **Customers with mixed valid DOB and placeholder/NULL DOB** | **17,060** | **11.90%** |
+| **Customers with mixed valid DOB and dummy/NULL DOB** | **17,060** | **11.90%** |
 | **Total customers with $\ge 2$ distinct raw DOB strings** | **142,093** | **99.07%** |
 | **Customers with $\ge 2$ different valid genders (`'M'` vs `'F'`)** | **59,820** | **41.71%** |
 | **Customers with $\ge 2$ different genders (including `'Unknown'`)** | **60,103** | **41.91%** |
@@ -249,8 +240,8 @@ ORDER BY profile_conflict_flag DESC;
 | **Customers with $\ge 2$ different cleaned metro locations** | **119,903** | **83.60%** |
 
 ### Definition of "Conflicting DOB":
-- **Conflicting Raw Strings (142,093)**: Customers where `COUNT(DISTINCT customer_dob) >= 2`. This includes customers who had a real date on one transaction (e.g., `'15/4/88'`) and placeholder dummy date `'1/1/1800'` or `'nan'` on another.
-- **Conflicting Valid Birthdays (128,005)**: Customers where `COUNT(DISTINCT parsed_dob) >= 2` strictly among valid, non-placeholder dates. Almost **9 out of 10 multi-transaction customers** have genuinely contradictory birth dates recorded across their transaction history.
+- **Conflicting Raw Strings (142,093)**: Customers where `COUNT(DISTINCT customer_dob) >= 2`. This includes customers who had a real date on one transaction (e.g., `'15/4/88'`) and dummy date `'1/1/1800'` or `'nan'` on another.
+- **Conflicting Valid Birthdays (128,005)**: Customers where `COUNT(DISTINCT parsed_dob) >= 2` strictly among valid, non-dummy dates. Almost **9 out of 10 multi-transaction customers** have different birth dates recorded across their transaction history.
 
 ---
 
@@ -299,13 +290,11 @@ ORDER BY profile_conflict_flag DESC;
 
 ### Data Limitations (Audit Findings & Practical Impact)
 
-When evaluating or explaining this dataset, identifying customer-level anomalies demonstrates rigorous data auditing:
-
 1. **Audit Evidence (Repeated Customer Profiles)**:
    - **143,420 customers** have 2 or more transactions (out of 883,660 total customers).
    - **128,005 of them (89.25%)** have 2+ different valid dates of birth recorded across transactions.
    - **59,820 of them (41.71%)** have both `'M'` and `'F'` recorded across transactions.
-   - The same Customer ID often shows extreme, uncharacteristic balance swings across transactions. For example, customer **`C1010046`** had an account balance of **2,360.67** on 14/08/2016 and **2,851,080.38** on 27/08/2016 (only 13 days apart).
+   - The same Customer ID often shows large balance swings across transactions. For example, customer **`C1010046`** had an account balance of **2,360.67** on 14/08/2016 and **2,851,080.38** on 27/08/2016 (only 13 days apart).
    - In total, **132,754 customers (15.02% of all customers, and 92.56% of repeat customers)** carry a profile conflict flag (`profile_conflict_flag = 1`).
 
 2. **Root Cause (Cause Not Verified)**:
@@ -323,9 +312,9 @@ When evaluating or explaining this dataset, identifying customer-level anomalies
 
 ---
 
-## 5. Robustness Analysis & Honest Assessment
+## 4. Robustness Analysis
 
-To evaluate whether the profile conflict anomaly distorts behavioral and demographic conclusions, we compare the entire customer population (**All Customers: 883,660**) side-by-side with the baseline cohort of single-transaction customers (**Txn Count = 1: 740,240**), where user profiles and demographics are 100% unconflicted.
+To evaluate whether the profile conflict anomaly distorts behavioral and demographic conclusions, we compare the entire customer population (**All Customers: 883,660**) side-by-side with the baseline cohort of single-transaction customers (**Txn Count = 1: 740,240**), where user profiles and demographics have no conflicting records.
 
 ### Age × Gender Demographics (Robustness Check)
 
@@ -360,7 +349,7 @@ To evaluate whether the profile conflict anomaly distorts behavioral and demogra
 | **Txn Count = 1** | Unknown | M | 37,131 | 3,494.97 | 1,000.00 | 40,511.42 |
 | **Txn Count = 1** | Unknown | Unknown | 690 | 2,490.54 | 297.06 | 233.00 |
 
-### Honest Assessment of Robustness
+### Summary of the robustness check
 
 1. **Where Differences Are Real**:
    - For young cohorts (ages 18–35), **median spend differs by 22% to 36%** between the full population and the single-transaction baseline:
@@ -371,16 +360,17 @@ To evaluate whether the profile conflict anomaly distorts behavioral and demogra
    - **Why this difference exists**: In the full population, multi-transaction customers accumulate multiple purchases over August–October. Because repeat customers transact 2 to 75 times, cumulative customer-level spend is shifted upward.
 
 2. **Where Stability Holds**:
-   - **Transaction Size Stability**: When examining individual transaction size (**average amount per transaction**), numbers match closely across cohorts:
+   - **Transaction Size**: Average amount per transaction differs by 0% to 17.76% between All and Txn=1 across cohorts (18–25 M: ₹946.49 vs ₹803.76 is the largest):
+     - 18–25 M: ₹946.49 (All) vs ₹803.76 (Txn=1) — a 17.76% difference
      - 18–25 F: ₹1,102.12 (All) vs ₹1,000.70 (Txn=1)
-     - 26–35 F: ₹1,601.23 (All) vs ₹1,603.90 (Txn=1)
      - 26–35 M: ₹1,333.33 (All) vs ₹1,270.42 (Txn=1)
+     - 26–35 F: ₹1,601.23 (All) vs ₹1,603.90 (Txn=1)
      - 60+ F: ₹2,862.33 (All) vs ₹3,118.60 (Txn=1)
-   - **Deposit Balance Stability**: **Median account balances** are extraordinarily stable (differing by less than 2% in key cohorts):
-     - 18–25 F: ₹11,906.25 vs ₹11,813.42 (0.8% delta)
-     - 26–35 F: ₹23,213.77 vs ₹23,063.11 (0.6% delta)
-     - 36–45 F: ₹41,486.07 vs ₹41,486.07 (identical)
-     - 60+ F: ₹46,571.64 vs ₹45,259.05 (2.9% delta)
+   - **Deposit Balance**: Median balance differs by 0.00% to 2.90%:
+     - 18–25 F: ₹11,906.25 vs ₹11,813.42 (0.79% delta)
+     - 26–35 F: ₹23,213.77 vs ₹23,063.11 (0.65% delta)
+     - 36–45 F: ₹41,486.07 vs ₹41,486.07 (0.00% delta)
+     - 60+ F: ₹46,571.64 vs ₹45,259.05 (2.90% delta)
 
 ### Value Segments: Flagged vs Unflagged Audit
 

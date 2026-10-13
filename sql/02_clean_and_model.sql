@@ -131,7 +131,7 @@ WHERE customer_id IS NOT NULL AND TRIM(customer_id) != ''
   AND CAST(TRIM(transaction_amount) AS DECIMAL(15,2)) > 0;
 
 -- Step 5: Build intermediate staging table with cleaned and parsed customer attributes.
--- Manual DOB parsing ensures 2-digit years and placeholder dates (1/1/1800, nan) are handled safely.
+-- Manual DOB parsing ensures 2-digit years and dummy dates (1/1/1800, nan) are handled safely.
 DROP TABLE IF EXISTS stage_clean_txns;
 CREATE TABLE stage_clean_txns (
     transaction_id         VARCHAR(50),
@@ -259,7 +259,7 @@ FROM (
 WHERE rnk = 1;
 
 -- Step 7: Resolve modal DOB per customer, prioritizing valid dates and breaking ties using latest transaction.
--- Selects the most consistent birthday per customer and filters out placeholder records.
+-- Selects the most consistent birthday per customer and filters out dummy records.
 DROP TABLE IF EXISTS cust_dob_mode;
 CREATE TABLE cust_dob_mode (
     customer_id VARCHAR(50) PRIMARY KEY,

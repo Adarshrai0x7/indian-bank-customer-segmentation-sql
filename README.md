@@ -11,7 +11,7 @@ This project analyzes about 1 million bank transactions from an Indian retail ba
 - **Raw Columns**:
   - `TransactionID`: Unique ID for each transaction.
   - `CustomerID`: Customer identifier.
-  - `CustomerDOB`: Date of birth as text. Contains 2-digit years, blanks, and placeholder `1/1/1800`.
+  - `CustomerDOB`: Date of birth as text. Contains 2-digit years, blanks, and dummy `1/1/1800`.
   - `CustGender`: Gender marked as 'M', 'F', 'T', or blank.
   - `CustLocation`: Customer location text or address line.
   - `CustAccountBalance`: Account balance at the time of transaction.
@@ -62,14 +62,14 @@ bank-segmentation-sql/
 
 Execute the SQL scripts in this exact order using MySQL Workbench or the `mysql` CLI:
 
-1. `sql/01_create_staging.sql`: Creates `staging_bank_transactions` and loads the raw CSV data (~30 seconds).
-2. `sql/02_clean_and_model.sql`: Cleans text fields, standardizes locations and dates, builds indexes, and creates `customers` and `transactions` tables (~11 minutes).
-3. `sql/03_validation_checks.sql`: Runs quality checks. Every test must return 0 rows (~1 minute).
-4. `sql/04_customer_features.sql`: Builds `customer_features` with lifetime spend and recency (~2 minutes).
-5. `sql/05_segmentation.sql`: Assigns `value_segment` and `rfm_segment` in `customer_segments` (~10 minutes).
-6. `sql/06_business_questions.sql`: Runs all business queries Q1 to Q11 and supplementary checks (~5 minutes).
+1. `sql/01_create_staging.sql`: Creates `staging_bank_transactions` and loads the raw CSV data.
+2. `sql/02_clean_and_model.sql`: Cleans text fields, standardizes locations and dates, builds indexes, and creates `customers` and `transactions` tables.
+3. `sql/03_validation_checks.sql`: Runs quality checks. Every test must return 0 rows.
+4. `sql/04_customer_features.sql`: Builds `customer_features` with lifetime spend and recency.
+5. `sql/05_segmentation.sql`: Assigns `value_segment` and `rfm_segment` in `customer_segments`.
+6. `sql/06_business_questions.sql`: Runs all business queries Q1 to Q11 and supplementary checks.
 
-*Total Runtime*: Approximately 25 minutes for all 6 scripts from start to finish.
+The full run takes about 30 to 40 minutes (depends on your computer). `02_clean_and_model.sql` and `06_business_questions.sql` are the longest. Result CSV files were exported from the query results.
 
 ### How I Checked the Numbers
 Key results were re-checked in MySQL Workbench against the raw tables: customer counts, Q1, Q3, Q7 hours and weekdays, Q8, Q11 totals.
@@ -90,6 +90,7 @@ mysql -u root -p bank_segmentation < sql/06_business_questions.sql
 2. In `01_create_staging.sql`, specify the full absolute path to `bank_transactions.csv` if the relative path returns Error 2 (e.g. `C:/path/to/data/bank_transactions.csv`).
 
 ### Troubleshooting and Settings
+- **Error 1046 No database selected**: run `USE bank_segmentation;` first, or double-click the database in Workbench.
 - **`LOAD DATA LOCAL INFILE` Setup**:
   1. In MySQL server, ensure local infile is enabled:
      ```sql
@@ -145,7 +146,7 @@ END AS value_segment
 - **Low**: Remaining customers (`ELSE 'Low'`).
 
 ### RFM Scores
-Recency is measured as `days_since_last_txn` relative to `2016-09-30` (end of full active quarter; October only has 2 active dates).
+Age is calculated as of 2016-10-21 (the last date in the data). Recency is measured from 2016-09-30 because October has only 2 active dates.
 Scores are assigned in `customer_segment_prep` using fixed buckets:
 - **Recency (`r_score`)**:
   - `4`: `days_since_last_txn <= 14` (0 to 14 days)
@@ -221,7 +222,7 @@ Every number below comes directly from exported CSV files in `results/`.
 *Note: These are business ideas based on data patterns, not proven results.*
 
 1. **Deposit Cross-Sell**: Contact the 47,208 high-balance, low-spend customers who hold ₹1,298.79 Crore in account balances recorded at the last transaction. Offer term deposits, wealth management, or auto-debit savings plans.
-2. **Campaign Timing**: Schedule promotions and app push notifications between 19:00 and 21:00 on weekdays, when transaction values and volumes peak.
+2. **Campaign Timing**: Schedule promotions and app push notifications between 19:00 and 21:00, when most transactions happen.
 3. **Identity Resolution Fix**: Before launching loyalty reward programs, clean up source customer IDs. Because 99.37% of Champions and Loyal customers show conflicting dates of birth or genders, loyalty rewards may go to shared IDs rather than individual customers.
 
 ---
@@ -232,7 +233,7 @@ Every number below comes directly from exported CSV files in `results/`.
 - **October incomplete**: October data cannot be used to measure monthly trends.
 - **August concentration**: August holds 62.36% of all transactions. Customers with no transactions after August are not churned; they simply appeared once in a single sample window.
 - **CustomerID quality**: 143,420 repeat customer IDs exist, but 128,005 have 2 or more different valid birth dates and 59,820 have conflicting genders (both M and F recorded). 132,754 customers are flagged.
-- **Champions and Loyal flagged**: 99.37% of customers in Champions and Loyal segments have profile conflicts. They likely represent shared accounts, family cards, or merchant feeds rather than loyal individuals.
+- **Champions and Loyal flagged**: 99.37% of customers in Champions and Loyal segments have profile conflicts. They may be shared IDs rather than single loyal customers. The cause is not verified.
 - **Messy location text**: 24.76% of transactions (259,453) fall into OTHER because raw text contains branch codes, state names, or abbreviations that cannot be mapped to a specific city.
 - **Zero-amount records**: 835 transactions had amount = 0 (no negative amounts exist in the raw data) with no explanation.
 - **Missing banking fields**: The data has no information on account type (savings vs current), loans, credit cards, or transaction channel (ATM vs POS vs online).
